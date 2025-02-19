@@ -69,7 +69,7 @@ function checkRankUpgrade(email) {
   const oldRank = localStorage.getItem("userRank_" + email) || "Unranked";
   const newRank = calculateRank(email);
   if (rankValue(newRank) > rankValue(oldRank)) {
-    // Trigger confetti celebration when a user reaches a new rank
+    // Trigger confetti celebration when rank is upgraded
     confetti({
       particleCount: 100,
       spread: 70,
@@ -93,7 +93,7 @@ const LIMIT_DURATION = 30 * 60 * 1000;          // 30 minutes in milliseconds
 function canSubmitReview() {
   const now = Date.now();
   let timestamps = JSON.parse(localStorage.getItem("reviewTimestamps") || "[]");
-  // Filter out timestamps older than 30 minutes
+  // Filter timestamps to those within the last 30 minutes
   timestamps = timestamps.filter(ts => now - ts < LIMIT_DURATION);
   return timestamps.length < REVIEW_LIMIT;
 }
@@ -103,17 +103,6 @@ function addReviewTimestamp() {
   let timestamps = JSON.parse(localStorage.getItem("reviewTimestamps") || "[]");
   timestamps.push(now);
   localStorage.setItem("reviewTimestamps", JSON.stringify(timestamps));
-}
-
-// Admin override rate limiting: Allow only 1 override per minute.
-const ADMIN_OVERRIDE_DURATION = 60 * 1000; // 1 minute
-function canAdminOverride() {
-  const last = localStorage.getItem("adminOverrideTimestamp");
-  if (!last) return true;
-  return (Date.now() - parseInt(last)) >= ADMIN_OVERRIDE_DURATION;
-}
-function recordAdminOverride() {
-  localStorage.setItem("adminOverrideTimestamp", Date.now().toString());
 }
 
 /***********************
@@ -153,6 +142,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderShowcase();
   initTypewriter();
 
+  // Attach event listener to the Submit Review button
   const submitButton = document.getElementById("submit-review-btn");
   if (submitButton) {
     submitButton.addEventListener("click", submitReview);
@@ -160,7 +150,7 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("Submit Review button not found! Ensure an element with id 'submit-review-btn' exists.");
   }
 
-  // Show admin panel if user is admin
+  // If admin, show the admin panel
   if (isAdmin()) {
     const adminPanel = document.getElementById("admin-panel");
     if (adminPanel) adminPanel.style.display = "block";
@@ -253,7 +243,7 @@ function highlightStars(rating, stars) {
   });
 }
 
-// iTunes Search using JSONP (for static GitHub Pages)
+// iTunes Search using JSONP (for GitHub Pages)
 function jsonp(url, callbackName) {
   const script = document.createElement("script");
   script.src = url + "&callback=" + callbackName;
@@ -321,7 +311,7 @@ function submitReview() {
     return;
   }
 
-  // Non-admin users are limited to 2 reviews per 30 minutes
+  // For non-admin users, enforce a limit of 2 reviews per 30 minutes
   if (!isAdmin() && !canSubmitReview()) {
     alert("You have reached the review limit (2 reviews per 30 minutes). Please try again later.");
     return;
@@ -473,5 +463,14 @@ function adminSetUserRank() {
   localStorage.setItem("userRank_" + targetEmail, selectedRank);
   recordAdminOverride();
   alert("Rank for " + targetEmail + " has been set to " + selectedRank + ".");
-  // Optionally, refresh the UI if needed.
+}
+
+function recordAdminOverride() {
+  localStorage.setItem("adminOverrideTimestamp", Date.now().toString());
+}
+
+function canAdminOverride() {
+  const last = localStorage.getItem("adminOverrideTimestamp");
+  if (!last) return true;
+  return (Date.now() - parseInt(last)) >= 60 * 1000; // 1 minute
 }

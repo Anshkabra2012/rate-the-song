@@ -87,13 +87,13 @@ function getUserRank(email) {
 /***********************
  * Rate Limiting Utilities
  ***********************/
-const REVIEW_LIMIT = 5;                        // max reviews allowed per user
-const LIMIT_DURATION = 4 * 60 * 60 * 1000;       // 4 hours in milliseconds
+const REVIEW_LIMIT = 2;                        // Non-admin users: 2 reviews
+const LIMIT_DURATION = 30 * 60 * 1000;          // 30 minutes in milliseconds
 
 function canSubmitReview() {
   const now = Date.now();
   let timestamps = JSON.parse(localStorage.getItem("reviewTimestamps") || "[]");
-  // Filter out timestamps older than 4 hours
+  // Filter out timestamps older than 30 minutes
   timestamps = timestamps.filter(ts => now - ts < LIMIT_DURATION);
   return timestamps.length < REVIEW_LIMIT;
 }
@@ -103,6 +103,17 @@ function addReviewTimestamp() {
   let timestamps = JSON.parse(localStorage.getItem("reviewTimestamps") || "[]");
   timestamps.push(now);
   localStorage.setItem("reviewTimestamps", JSON.stringify(timestamps));
+}
+
+// Admin override rate limiting: Allow only 1 override per minute.
+const ADMIN_OVERRIDE_DURATION = 60 * 1000; // 1 minute
+function canAdminOverride() {
+  const last = localStorage.getItem("adminOverrideTimestamp");
+  if (!last) return true;
+  return (Date.now() - parseInt(last)) >= ADMIN_OVERRIDE_DURATION;
+}
+function recordAdminOverride() {
+  localStorage.setItem("adminOverrideTimestamp", Date.now().toString());
 }
 
 /***********************
@@ -142,7 +153,6 @@ window.addEventListener("DOMContentLoaded", () => {
   renderShowcase();
   initTypewriter();
 
-  // Attach event listener to the Submit Review button
   const submitButton = document.getElementById("submit-review-btn");
   if (submitButton) {
     submitButton.addEventListener("click", submitReview);
@@ -150,7 +160,7 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("Submit Review button not found! Ensure an element with id 'submit-review-btn' exists.");
   }
 
-  // If admin, show the admin panel (if it exists)
+  // Show admin panel if user is admin
   if (isAdmin()) {
     const adminPanel = document.getElementById("admin-panel");
     if (adminPanel) adminPanel.style.display = "block";
@@ -173,7 +183,10 @@ function parseJwt(token) {
   const base64Url = token.split(".")[1];
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
   const jsonPayload = decodeURIComponent(
-    atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
+    atob(base64)
+      .split("")
+      .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+      .join("")
   );
   return JSON.parse(jsonPayload);
 }
@@ -240,7 +253,7 @@ function highlightStars(rating, stars) {
   });
 }
 
-// iTunes Search using JSONP (works on static GitHub Pages)
+// iTunes Search using JSONP (for static GitHub Pages)
 function jsonp(url, callbackName) {
   const script = document.createElement("script");
   script.src = url + "&callback=" + callbackName;
@@ -308,9 +321,9 @@ function submitReview() {
     return;
   }
 
-  // If the current user is not admin, enforce rate limiting
+  // Non-admin users are limited to 2 reviews per 30 minutes
   if (!isAdmin() && !canSubmitReview()) {
-    alert("You have reached the review limit (5 reviews per 4 hours). Please try again later.");
+    alert("You have reached the review limit (2 reviews per 30 minutes). Please try again later.");
     return;
   }
 
@@ -356,7 +369,7 @@ function submitReview() {
   reviews.push(newReview);
   saveAllReviews(reviews);
 
-  // For non-admin users, record a timestamp for rate limiting
+  // For non-admin users, record the review timestamp
   if (!isAdmin()) {
     addReviewTimestamp();
   }
@@ -435,7 +448,6 @@ function initTypewriter() {
     .start();
 }
 
-// Utility: Check if current user is admin (hardcoded email)
 function isAdmin() {
   return currentUser && currentUser.email === "resoluteplanes@gmail.com";
 }
@@ -443,8 +455,15 @@ function isAdmin() {
 /***********************
  * Admin-Only Rank Override
  ***********************/
-// This function allows the admin to set any user's rank by their email.
 function adminSetUserRank() {
+  if (!isAdmin()) {
+    alert("Unauthorized: Only admin can set user ranks.");
+    return;
+  }
+  if (!canAdminOverride()) {
+    alert("Please wait a minute before submitting another override.");
+    return;
+  }
   const targetEmail = document.getElementById("admin-email-input").value.trim();
   const selectedRank = document.getElementById("admin-rank-select").value;
   if (!targetEmail) {
@@ -452,6 +471,7 @@ function adminSetUserRank() {
     return;
   }
   localStorage.setItem("userRank_" + targetEmail, selectedRank);
+  recordAdminOverride();
   alert("Rank for " + targetEmail + " has been set to " + selectedRank + ".");
-  // Optionally, refresh UI if needed.
+  // Optionally, refresh the UI if needed.
 }

@@ -1,7 +1,7 @@
 /***********************
  * Encryption Utilities
  ***********************/
-const MASTER_KEY = "11992091987021652611158681308931"; // CHANGE THIS to a secure random string
+const MASTER_KEY = "11992091987021652611158681308931";
 const REVIEWS_STORAGE_KEY = "x9c3";
 const REVIEWS_KEY_STORAGE_KEY = "x9c3_key";
 
@@ -88,6 +88,34 @@ function getUserRank(email) {
 }
 
 /***********************
+ * Rate Limiting Utilities
+ ***********************/
+const REVIEW_LIMIT = 5;           // max reviews allowed
+const LIMIT_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+
+function canSubmitReview() {
+  const now = Date.now();
+  let timestamps = JSON.parse(localStorage.getItem("reviewTimestamps") || "[]");
+  // Filter out timestamps older than 4 hours
+  timestamps = timestamps.filter(ts => now - ts < LIMIT_DURATION);
+  if (timestamps.length >= REVIEW_LIMIT) {
+    return false;
+  }
+  return true;
+}
+
+function addReviewTimestamp() {
+  const now = Date.now();
+  let timestamps = JSON.parse(localStorage.getItem("reviewTimestamps") || "[]");
+  timestamps.push(now);
+  localStorage.setItem("reviewTimestamps", JSON.stringify(timestamps));
+}
+
+/***********************
+ * End Rate Limiting
+ ***********************/
+
+/***********************
  * Other Functionality
  ***********************/
 // Particles.js Background
@@ -120,11 +148,12 @@ window.addEventListener("DOMContentLoaded", () => {
   renderShowcase();
   initTypewriter();
 
+  // Attach event listener to the Submit Review button
   const submitButton = document.getElementById("submit-review-btn");
   if (submitButton) {
     submitButton.addEventListener("click", submitReview);
   } else {
-    console.error("Submit Review button not found! Make sure an element with id 'submit-review-btn' exists.");
+    console.error("Submit Review button not found! Ensure an element with id 'submit-review-btn' exists.");
   }
 });
 
@@ -143,7 +172,12 @@ function handleCredentialResponse(response) {
 function parseJwt(token) {
   const base64Url = token.split(".")[1];
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const jsonPayload = decodeURIComponent(atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""));
+  const jsonPayload = decodeURIComponent(
+    atob(base64)
+      .split("")
+      .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+      .join("")
+  );
   return JSON.parse(jsonPayload);
 }
 
@@ -208,23 +242,31 @@ function highlightStars(rating, stars) {
   });
 }
 
-// iTunes Search using fetch (directly; ensure your browser supports CORS from iTunes)
+// iTunes Search using JSONP
+function jsonp(url, callbackName) {
+  const script = document.createElement("script");
+  script.src = url + "&callback=" + callbackName;
+  document.body.appendChild(script);
+  // Clean up the script tag after it loads
+  script.onload = () => document.body.removeChild(script);
+}
+
+function handleItunesResults(data) {
+  renderResults(data.results);
+}
+
 const songSearch = document.getElementById("song-search");
 const resultsContainer = document.getElementById("results");
-songSearch.addEventListener("input", async function() {
+
+songSearch.addEventListener("input", function() {
   const query = this.value.trim();
   if (query.length < 2) {
     resultsContainer.innerHTML = "";
     return;
   }
   const url = `https://itunes.apple.com/search?entity=song&country=us&limit=6&term=${encodeURIComponent(query)}`;
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    renderResults(data.results);
-  } catch (err) {
-    console.error("Error searching songs:", err);
-  }
+  // Use JSONP to fetch data from iTunes
+  jsonp(url, "handleItunesResults");
 });
 
 function renderResults(songs) {
@@ -263,11 +305,17 @@ function selectSong(title, art) {
   document.getElementById("review-section").scrollIntoView({ behavior: "smooth" });
 }
 
-// Submit Review with Encryption, Key Rotation, and Rank Update
+// Submit Review with Rate Limiting, Encryption, and Rank Update
 function submitReview() {
   console.log("submitReview() called");
   if (!currentUser) {
     alert("Please sign in first.");
+    return;
+  }
+
+  // Rate limit: Only allow 5 reviews per 4 hours per IP/browser
+  if (!canSubmitReview()) {
+    alert("You have reached the review limit (5 reviews per 4 hours). Please try again later.");
     return;
   }
 
@@ -313,6 +361,9 @@ function submitReview() {
   reviews.push(newReview);
   saveAllReviews(reviews);
 
+  // Add timestamp for rate limiting
+  addReviewTimestamp();
+
   // Update user rank and trigger celebration if rank increases
   checkRankUpgrade(currentUser.email);
 
@@ -322,7 +373,6 @@ function submitReview() {
   textInput.value = "";
   selectedRating = 0;
   highlightStars(0, document.querySelectorAll("#star-rating i"));
-
   updateSignInUI();
   renderShowcase();
 }
@@ -388,7 +438,6 @@ function initTypewriter() {
     .start();
 }
 
-// Utility: Check if current user is admin (hardcoded email)
 function isAdmin() {
   return currentUser && currentUser.email === "resoluteplanes@gmail.com";
 }

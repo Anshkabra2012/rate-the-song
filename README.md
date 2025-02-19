@@ -12,17 +12,17 @@
 
 <h2>Project Screenshots:</h2>
 
-<img src="https://iili.io/39dAbG1.png" alt="project-screenshot" width="600" height="700/">
+<img src="https://iili.io/39dAbG1.png" alt="project-screenshot" width="auto" height="400/">
 
-<img src="https://iili.io/39dceTb.png" alt="project-screenshot" width="600" height="700/">
+<img src="https://iili.io/39dceTb.png" alt="project-screenshot" width="auto" height="400/">
 
-<img src="https://iili.io/39d0ls4.png" alt="project-screenshot" width="600" height="700/">
+<img src="https://iili.io/39d0ls4.png" alt="project-screenshot" width="auto" height="400/">
 
-<img src="https://iili.io/39d14F2.png" alt="project-screenshot" width="600" height="700/">
+<img src="https://iili.io/39d14F2.png" alt="project-screenshot" width="auto" height="400/">
 
-<img src="https://iili.io/39dEnFp.png" alt="project-screenshot" width="600" height="700/">
+<img src="https://iili.io/39dEnFp.png" alt="project-screenshot" width="auto" height="400/">
 
-<img src="https://iili.io/39dEDOX.png" alt="project-screenshot" width="600" height="700/">
+<img src="https://iili.io/39dEDOX.png" alt="project-screenshot" width="auto" height="400/">
 
   
   

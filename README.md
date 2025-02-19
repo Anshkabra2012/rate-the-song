@@ -4,7 +4,11 @@
 
 <p id="description">Rate the Song is a web app where users can search for songs leave star ratings and reviews and earn ranks based on their activity. It features Google sign-in encrypted data storage an admin rank override confetti celebrations for rank upgrades and a stats page for tracking reviews.</p>
 
-<p align="center"><img src="https://img.shields.io/github/issues/Anshkabra2012/rate-the-song" alt="shields"><img src="https://img.shields.io/github/forks/Anshkabra2012/rate-the-song?style=social" alt="shields"><img src="https://img.shields.io/github/stars/Anshkabra2012/rate-the-song?style=social" alt="shields"><img src="https://img.shields.io/github/watchers/Anshkabra2012/rate-the-song?style=social" alt="shields"><img src="https://img.shields.io/github/last-commit/Anshkabra2012/rate-the-song" alt="shields"><img src="https://img.shields.io/github/issues-pr/Anshkabra2012/rate-the-song" alt="shields"><img src="https://img.shields.io/github/languages/code-size/Anshkabra2012/rate-the-song" alt="shields"><img src="https://img.shields.io/github/languages/top/Anshkabra2012/rate-the-song" alt="shields"></p>
+<p align="center"><img src="https://img.shields.io/github/issues/Anshkabra2012/rate-the-song" alt="shields">
+<img src="https://img.shields.io/github/forks/Anshkabra2012/rate-the-song?style=social" alt="shields">
+<img src="https://img.shields.io/github/stars/Anshkabra2012/rate-the-song?style=social" alt="shields"><img src="https://img.shields.io/github/watchers/Anshkabra2012/rate-the-song?style=social" alt="shields"><img src="https://img.shields.io/github/last-commit/Anshkabra2012/rate-the-song" alt="shields">
+<img src="https://img.shields.io/github/issues-pr/Anshkabra2012/rate-the-song" alt="shields"><img src="https://img.shields.io/github/languages/code-size/Anshkabra2012/rate-the-song" alt="shields">
+<img src="https://img.shields.io/github/languages/top/Anshkabra2012/rate-the-song" alt="shields"></p>
 
 <h2>🚀 Demo</h2>
 

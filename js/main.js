@@ -1,4 +1,7 @@
-const MASTER_KEY = "9f86d081884c7d659a2feaa0c55ad015a3bf4f13b4371b0f5e07394c7063be60";
+/***********************
+ * Encryption Utilities
+ ***********************/
+const MASTER_KEY = "11992091987021652611158681308931"; // CHANGE THIS to a secure random string
 const REVIEWS_STORAGE_KEY = "x9c3";
 const REVIEWS_KEY_STORAGE_KEY = "x9c3_key";
 
@@ -36,9 +39,8 @@ function saveAllReviews(reviewsArray) {
 }
 
 /***********************
- * Ranking & Confetti (Optional)
+ * Ranking Utilities
  ***********************/
-// Example rank calculation logic
 function getUserReviewCount(email) {
   const reviews = getAllReviews();
   return reviews.filter(r => r.userEmail === email).length;
@@ -54,21 +56,6 @@ function calculateRank(email) {
   return "Unranked";
 }
 
-// If you want to do a confetti burst when rank improves, you can do so here.
-function checkRankUpgrade(email) {
-  const oldRank = localStorage.getItem("userRank_" + email) || "Unranked";
-  const newRank = calculateRank(email);
-  if (rankValue(newRank) > rankValue(oldRank)) {
-    // Confetti if rank is higher
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-  }
-  localStorage.setItem("userRank_" + email, newRank);
-}
-
 function rankValue(rank) {
   switch (rank) {
     case "Unranked": return 0;
@@ -81,43 +68,67 @@ function rankValue(rank) {
   }
 }
 
+function checkRankUpgrade(email) {
+  const oldRank = localStorage.getItem("userRank_" + email) || "Unranked";
+  const newRank = calculateRank(email);
+  if (rankValue(newRank) > rankValue(oldRank)) {
+    // Celebration: trigger confetti
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  }
+  localStorage.setItem("userRank_" + email, newRank);
+}
+
+function getUserRank(email) {
+  const savedRank = localStorage.getItem("userRank_" + email);
+  return savedRank ? savedRank : calculateRank(email);
+}
+
 /***********************
  * Other Functionality
  ***********************/
+// Particles.js Background
+particlesJS("particles-js", {
+  "particles": {
+    "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+    "color": { "value": "#ffffff" },
+    "shape": { "type": "circle" },
+    "opacity": { "value": 0.3 },
+    "size": { "value": 3, "random": true },
+    "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.1, "width": 1 },
+    "move": { "enable": true, "speed": 2 }
+  },
+  "interactivity": {
+    "events": {
+      "onhover": { "enable": true, "mode": "grab" },
+      "onclick": { "enable": true, "mode": "push" }
+    }
+  },
+  "retina_detect": true
+});
 
 // Google Identity Services
 let currentUser = null;
-
 window.addEventListener("DOMContentLoaded", () => {
-  // Restore user from localStorage, if any
   const storedUser = localStorage.getItem("loggedInUser");
-  if (storedUser) {
-    currentUser = JSON.parse(storedUser);
-  }
-
-  // Initialize star rating
+  if (storedUser) currentUser = JSON.parse(storedUser);
   initStarRating();
-
-  // Update UI sign-in state
   updateSignInUI();
-
-  // Render existing reviews in showcase
   renderShowcase();
-
-  // Typewriter effect, if you have that in your HTML
   initTypewriter();
 
-  // *** IMPORTANT: Attach event listener to the "Submit Review" button ***
   const submitButton = document.getElementById("submit-review-btn");
   if (submitButton) {
     submitButton.addEventListener("click", submitReview);
   } else {
-    console.error("Submit Review button not found! Make sure you have an element with id='submit-review-btn'.");
+    console.error("Submit Review button not found! Make sure an element with id 'submit-review-btn' exists.");
   }
 });
 
 function handleCredentialResponse(response) {
-  // Google ID token
   const token = response.credential;
   const payload = parseJwt(token);
   currentUser = {
@@ -132,9 +143,7 @@ function handleCredentialResponse(response) {
 function parseJwt(token) {
   const base64Url = token.split(".")[1];
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const jsonPayload = decodeURIComponent(
-    atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
-  );
+  const jsonPayload = decodeURIComponent(atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""));
   return JSON.parse(jsonPayload);
 }
 
@@ -148,9 +157,8 @@ function updateSignInUI() {
   const userGreeting = document.getElementById("user-greeting");
   const signoutLink = document.getElementById("signout-link");
   const reviewSection = document.getElementById("review-section");
-
   if (currentUser) {
-    const rank = localStorage.getItem("userRank_" + currentUser.email) || calculateRank(currentUser.email);
+    const rank = getUserRank(currentUser.email);
     userGreeting.style.display = "block";
     userGreeting.textContent = `Signed in as ${currentUser.name} (${currentUser.email}) [${rank}]`;
     signoutLink.style.display = "inline";
@@ -162,12 +170,12 @@ function updateSignInUI() {
   }
 }
 
-// Star Rating
+// Star Rating System
 let selectedRating = 0;
 function initStarRating() {
   const starContainer = document.getElementById("star-rating");
   if (!starContainer) {
-    console.error("Star rating container (#star-rating) not found in HTML.");
+    console.error("Star rating container (#star-rating) not found.");
     return;
   }
   const stars = starContainer.querySelectorAll("i");
@@ -200,9 +208,64 @@ function highlightStars(rating, stars) {
   });
 }
 
-// Submit Review
+// iTunes Search using fetch (directly; ensure your browser supports CORS from iTunes)
+const songSearch = document.getElementById("song-search");
+const resultsContainer = document.getElementById("results");
+songSearch.addEventListener("input", async function() {
+  const query = this.value.trim();
+  if (query.length < 2) {
+    resultsContainer.innerHTML = "";
+    return;
+  }
+  const url = `https://itunes.apple.com/search?entity=song&country=us&limit=6&term=${encodeURIComponent(query)}`;
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    renderResults(data.results);
+  } catch (err) {
+    console.error("Error searching songs:", err);
+  }
+});
+
+function renderResults(songs) {
+  resultsContainer.innerHTML = "";
+  songs.forEach(song => {
+    const card = document.createElement("div");
+    card.className = "song-card";
+    const artwork = song.artworkUrl100 || "";
+    const trackName = song.trackName || "Unknown Title";
+    const artistName = song.artistName || "Unknown Artist";
+    const collectionName = song.collectionName || "Unknown Album";
+    card.innerHTML = `
+      <img src="${artwork}" alt="Album Art" />
+      <div class="song-details">
+        <h3>${trackName}</h3>
+        <p><i class="fas fa-user"></i> ${artistName}</p>
+        <p><i class="fas fa-compact-disc"></i> ${collectionName}</p>
+        <button onclick="selectSong('${trackName.replace(/'/g, "\\'")}', '${artwork}')">
+          <i class="fas fa-edit"></i> Review
+        </button>
+      </div>
+    `;
+    resultsContainer.appendChild(card);
+  });
+}
+
+function selectSong(title, art) {
+  if (!currentUser) {
+    alert("Please sign in before reviewing a song.");
+    return;
+  }
+  document.getElementById("review-song-title").value = title;
+  document.getElementById("review-song-art").value = art;
+  selectedRating = 0;
+  highlightStars(0, document.querySelectorAll("#star-rating i"));
+  document.getElementById("review-section").scrollIntoView({ behavior: "smooth" });
+}
+
+// Submit Review with Encryption, Key Rotation, and Rank Update
 function submitReview() {
-  console.log("submitReview() called"); // For debugging
+  console.log("submitReview() called");
   if (!currentUser) {
     alert("Please sign in first.");
     return;
@@ -246,37 +309,33 @@ function submitReview() {
     picture: currentUser.picture
   };
 
-  // Get existing reviews
   let reviews = getAllReviews();
   reviews.push(newReview);
   saveAllReviews(reviews);
 
-  // Update rank & confetti if rank improved
+  // Update user rank and trigger celebration if rank increases
   checkRankUpgrade(currentUser.email);
 
   alert("Review submitted successfully!");
-  // Clear form fields
   titleInput.value = "";
   artInput.value = "";
   textInput.value = "";
   selectedRating = 0;
   highlightStars(0, document.querySelectorAll("#star-rating i"));
 
-  // Refresh UI
   updateSignInUI();
   renderShowcase();
 }
 
-// Showcase
+// Showcase Rendering
 function renderShowcase() {
   const ratedSongs = document.getElementById("rated-songs");
   if (!ratedSongs) {
-    console.error("#rated-songs container not found. Check your HTML.");
+    console.error("#rated-songs container not found.");
     return;
   }
   const reviews = getAllReviews();
   ratedSongs.innerHTML = "";
-
   reviews.forEach((item, index) => {
     const card = document.createElement("div");
     card.className = "rated-card";
@@ -293,8 +352,6 @@ function renderShowcase() {
       </button>
     `;
     ratedSongs.appendChild(card);
-
-    // Show delete button if admin
     if (isAdmin()) {
       card.querySelector(".delete-btn").style.display = "block";
     }
@@ -314,7 +371,7 @@ function deleteReview(index) {
   updateSignInUI();
 }
 
-// Example typewriter effect
+// Typewriter Effect in Navigation
 function initTypewriter() {
   const typewriterElement = document.getElementById("typewriter");
   if (!typewriterElement) return;
@@ -331,6 +388,7 @@ function initTypewriter() {
     .start();
 }
 
+// Utility: Check if current user is admin (hardcoded email)
 function isAdmin() {
   return currentUser && currentUser.email === "resoluteplanes@gmail.com";
 }

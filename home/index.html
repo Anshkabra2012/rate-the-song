@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Song Rater (Stars + Ranks) - Home</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <!-- External Libraries -->
+  <script src="https://kit.fontawesome.com/e328bff894.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+<link rel="apple-touch-icon" sizes="180x180" href="../favicons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="../favicons/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../favicons/favicon-192x192.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../favicons/favicon-16x16.png">
+<link rel="manifest" href="../favicons/site.webmanifest">
+</head>
+<body>
+  <!-- Particles Background -->
+  <div id="particles-js"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <h1>
+      <i class="fas fa-music"></i>
+      <span id="typewriter">Rate the Song</span>
+    </h1>
+    <div>
+      <a href="#search-section"><i class="fas fa-search"></i> Search</a>
+      <a href="#review-section"><i class="fas fa-edit"></i> Review</a>
+      <a href="#showcase-section"><i class="fas fa-star"></i> Showcase</a>
+      <a href="#rank-showcase"><i class="fas fa-trophy"></i> Ranks</a>
+      <!-- External page links -->
+      <a class="external-link" href="../ranks/ranks.html"><i class="fas fa-award"></i> Full Ranks</a>
+      <a class="external-link" href="../stats/stats.html"><i class="fas fa-chart-line"></i> Stats</a>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Sign In Section -->
+    <section id="signin-section">
+      <h2><i class="fas fa-user-circle"></i> Sign In to Review</h2>
+      <div id="g_id_onload"
+           data-client_id="579415879790-fabuskevlu5nbspkfh4p67f41dvtrk5j.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false"></div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="medium"
+           data-theme="outline"
+           data-text="signin_with"
+           data-shape="rectangular"
+           data-logo_alignment="left"></div>
+      <p id="user-greeting"></p>
+      <span id="signout-link" onclick="handleSignOut()">Sign out</span>
+    </section>
+
+    <!-- Search Section -->
+    <section id="search-section">
+      <h2><i class="fas fa-headphones-alt"></i> Search for Songs</h2>
+      <div class="search-container">
+        <input type="text" id="song-search" placeholder="Type a song name..." />
+        <i class="fas fa-search"></i>
+      </div>
+      <div id="results" class="results-grid"></div>
+    </section>
+
+    <!-- Review Section -->
+    <section id="review-section" class="disabled">
+      <h2><i class="fas fa-pen-alt"></i> Review a Song</h2>
+      <div class="review-field">
+        <label><i class="fas fa-music"></i> Song Title (auto-filled):</label>
+        <input type="text" id="review-song-title" readonly />
+      </div>
+      <div class="review-field">
+        <label><i class="fas fa-image"></i> Album Art (auto-filled):</label>
+        <input type="text" id="review-song-art" readonly />
+      </div>
+      <div class="review-field">
+        <label><i class="fas fa-star"></i> Your Rating (1-5):</label>
+        <div class="star-rating" id="star-rating">
+          <i class="fas fa-star animate__animated" data-value="1"></i>
+          <i class="fas fa-star animate__animated" data-value="2"></i>
+          <i class="fas fa-star animate__animated" data-value="3"></i>
+          <i class="fas fa-star animate__animated" data-value="4"></i>
+          <i class="fas fa-star animate__animated" data-value="5"></i>
+        </div>
+      </div>
+      <div class="review-field">
+        <label><i class="fas fa-comment"></i> Your Review:</label>
+        <textarea id="review-text" rows="3" placeholder="What did you think?"></textarea>
+      </div>
+      <button onclick="submitReview()"><i class="fas fa-paper-plane"></i> Submit Review</button>
+    </section>
+
+    <!-- Showcase Section -->
+    <section id="showcase-section">
+      <h2><i class="fas fa-star"></i> Song Showcase</h2>
+      <div id="rated-songs" class="showcase-grid"></div>
+    </section>
+
+    <!-- Rank Showcase -->
+    <section id="rank-showcase">
+      <h2><i class="fas fa-trophy"></i> Rank Showcase</h2>
+      <p>Users earn higher ranks by submitting more reviews. Here are the ranks:</p>
+      <div class="rank-list">
+        <div class="rank-item">
+          <i class="fas fa-award rank-icon" style="color:#cd7f32;"></i>
+          <div><strong>Bronze</strong><br/>1–5 reviews</div>
+        </div>
+        <div class="rank-item">
+          <i class="fas fa-medal rank-icon" style="color:#c0c0c0;"></i>
+          <div><strong>Silver</strong><br/>6–10 reviews</div>
+        </div>
+        <div class="rank-item">
+          <i class="fas fa-crown rank-icon" style="color:#ffd700;"></i>
+          <div><strong>Gold</strong><br/>11–20 reviews</div>
+        </div>
+        <div class="rank-item">
+          <i class="fas fa-gem rank-icon" style="color:#e5e4e2;"></i>
+          <div><strong>Platinum</strong><br/>21–30 reviews</div>
+        </div>
+        <div class="rank-item">
+          <i class="fas fa-gem rank-icon" style="color:#b9f2ff;"></i>
+          <div><strong>Diamond</strong><br/>31+ reviews</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer with Social Icons -->
+  <footer>
+    <div class="footer-icons">
+      <a href="https://github.com/Anshkabra2012/rate-the-song" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+      <a href="https://x.com/anshkabra2012" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="https://discord.gg/uTQWQNmTAy" target="_blank" title="LinkedIn"><i class="fab fa-discord"></i></a>
+      <a href="https://tiktok.com/@anshthedev" target="_blank" title="Instagram"><i class="fab fa-tiktok"></i></a>
+    </div>
+    <p>&copy; 2025 Song Rater. All rights reserved.</p>
+  </footer>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

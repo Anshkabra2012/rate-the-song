@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Rate The Song - Stats</title>
+
+  <!-- Link to your external CSS -->
+  <link rel="stylesheet" href="../css/style.css">
+
+  <!-- Google Identity Services, FontAwesome, etc. -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://kit.fontawesome.com/e328bff894.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+  <link rel="apple-touch-icon" sizes="180x180" href="../favicons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="../favicons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../favicons/favicon-192x192.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicons/favicon-16x16.png">
+  <link rel="manifest" href="../favicons/site.webmanifest">
+</head>
+<body>
+  <!-- Particles background (optional) -->
+  <div id="particles-js"></div>
+
+  <!-- Navigation (Optional) -->
+  <nav>
+    <h1>
+      <i class="fas fa-chart-line"></i> Stats Page
+    </h1>
+    <div>
+      <!-- Link back to home -->
+      <a href="../home/index.html"><i class="fas fa-home"></i> Home</a>
+      <!-- Link to ranks -->
+      <a href="../ranks/ranks.html"><i class="fas fa-award"></i> Ranks</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Google Sign-In Section -->
+    <section id="signin-section">
+      <h2><i class="fas fa-user-circle"></i> Sign In to View Stats</h2>
+      <div 
+        id="g_id_onload"
+        data-client_id="579415879790-fabuskevlu5nbspkfh4p67f41dvtrk5j.apps.googleusercontent.com"
+        data-callback="handleCredentialResponse"
+        data-auto_prompt="false">
+      </div>
+      <div 
+        class="g_id_signin"
+        data-type="standard"
+        data-size="medium"
+        data-theme="outline"
+        data-text="signin_with"
+        data-shape="rectangular"
+        data-logo_alignment="left">
+      </div>
+
+      <p id="user-greeting"></p>
+      <span id="signout-link" onclick="handleSignOut()">Sign out</span>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-container">
+      <h2>Overall Popular Statistics</h2>
+      <p>Based on user reviews in localStorage.</p>
+      <div id="popular-stats">
+        <!-- Filled by JavaScript from main.js (or inline) -->
+      </div>
+    </section>
+
+    <!-- (Optional) Searching Other Users, etc. -->
+    <!-- Add any additional stats features you'd like -->
+
+  </div>
+
+  <!-- Footer (optional) -->
+  <footer>
+    <div class="footer-icons">
+      <a href="https://github.com/Anshkabra2012/rate-the-song" title="GitHub"><i class="fab fa-github"></i></a>
+      <a href="https://x.com/anshkabra2012" title="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="https://tiktok.com/@anshthedev" title="tiktok"><i class="fab fa-tiktok"></i></a>
+      <a href="https://discord.gg/uTQWQNmTAy" title="Disord"><i class="fab fa-discord"></i></a>
+    </div>
+    <p>&copy; 2025 Rank Hub. All rights reserved.</p>
+  </footer>
+
+  <!-- Link to your main JS -->
+  <script src="../js/main.js"></script>
+
+  <!-- Optionally, you can add extra JS here to handle stats logic,
+       e.g., showing total reviews, average rating, etc. -->
+  <script>
+    // Example: basic stats rendering (if you store them in main.js or localStorage)
+    window.addEventListener("DOMContentLoaded", () => {
+      renderStats();
+    });
+
+    function renderStats() {
+      const container = document.getElementById("popular-stats");
+      const reviews = getAllReviews(); // from main.js
+
+      if (reviews.length === 0) {
+        container.innerHTML = "<p>No reviews found. Submit some on the home page!</p>";
+        return;
+      }
+
+      // Basic stats (example)
+      const totalReviews = reviews.length;
+      const uniqueUsers = new Set(reviews.map(r => r.userEmail)).size;
+      const avgRating = (reviews.reduce((acc, cur) => acc + (cur.rating || 0), 0) / totalReviews).toFixed(2);
+
+      container.innerHTML = `
+        <p><strong>Total Reviews:</strong> ${totalReviews}</p>
+        <p><strong>Unique Users:</strong> ${uniqueUsers}</p>
+        <p><strong>Average Rating:</strong> ${avgRating}</p>
+      `;
+    }
+  </script>
+</body>
+</html>

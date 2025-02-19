@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rank Hub - Calculate Your Rank</title>
+
+  <!-- Font Awesome Icons -->
+  <script src="https://kit.fontawesome.com/e328bff894.js" crossorigin="anonymous"></script>
+  <!-- Confetti Library for super cool functionality -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="apple-touch-icon" sizes="180x180" href="../favicons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="../favicons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../favicons/favicon-192x192.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicons/favicon-16x16.png">
+  <link rel="manifest" href="../favicons/site.webmanifest">
+  
+  <style>
+    /* Reset and Base Styles */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Courier New", Courier, monospace;
+      background-color: #0d1117;
+      color: #fff;
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, #58a6ff, #3392ff);
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2.5rem;
+    }
+    header p {
+      font-size: 1.2rem;
+      margin-top: 10px;
+    }
+    main {
+      padding: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+    .calculator, .rank-overview {
+      background-color: #161b22;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    .calculator h2, .rank-overview h2 {
+      margin-bottom: 15px;
+      color: #58a6ff;
+    }
+    .calculator input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    .calculator button {
+      padding: 10px 20px;
+      background-color: #58a6ff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .calculator button:hover {
+      background-color: #3392ff;
+    }
+    .calculator .result {
+      margin-top: 15px;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    .rank-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .rank-card {
+      background-color: #0d1117;
+      border: 2px solid #58a6ff;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+    .rank-card:hover {
+      transform: scale(1.05);
+    }
+    .rank-card i {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    .rank-card h3 {
+      margin-bottom: 5px;
+      color: #58a6ff;
+    }
+    .rank-card p {
+      font-size: 0.9rem;
+      color: #8b949e;
+    }
+    footer {
+      background-color: #161b22;
+      padding: 15px;
+      text-align: center;
+    }
+    footer .social-icons a {
+      color: #58a6ff;
+      font-size: 1.5rem;
+      margin: 0 10px;
+      transition: color 0.3s;
+    }
+    footer .social-icons a:hover {
+      color: #3392ff;
+    }
+    footer p {
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <h1>Rank Hub</h1>
+    <p>Discover your rank and level up your reviewing game!</p>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Rank Calculator Section -->
+    <section class="calculator">
+      <h2>Calculate Your Rank</h2>
+      <p>Enter the number of reviews you've submitted to see your rank.</p>
+      <input type="number" id="review-input" placeholder="Enter number of reviews" min="0" />
+      <button onclick="calculateRank()">Calculate Rank</button>
+      <div class="result" id="rank-result"></div>
+    </section>
+
+    <!-- Rank Overview Section -->
+    <section class="rank-overview">
+      <h2>Rank Overview</h2>
+      <div class="rank-grid">
+        <div class="rank-card">
+          <i class="fas fa-user" style="color: #aaa;"></i>
+          <h3>Unranked</h3>
+          <p>0 reviews. Get started by submitting your first review!</p>
+        </div>
+        <div class="rank-card">
+          <i class="fas fa-award" style="color: #cd7f32;"></i>
+          <h3>Bronze</h3>
+          <p>1–5 reviews. Keep going and earn more recognition!</p>
+        </div>
+        <div class="rank-card">
+          <i class="fas fa-medal" style="color: #c0c0c0;"></i>
+          <h3>Silver</h3>
+          <p>6–10 reviews. Nice work! Your efforts shine through.</p>
+        </div>
+        <div class="rank-card">
+          <i class="fas fa-crown" style="color: #ffd700;"></i>
+          <h3>Gold</h3>
+          <p>11–20 reviews. Impressive! You're a top contributor.</p>
+        </div>
+        <div class="rank-card">
+          <i class="fas fa-gem" style="color: #e5e4e2;"></i>
+          <h3>Platinum</h3>
+          <p>21–30 reviews. Outstanding! You're almost at the pinnacle.</p>
+        </div>
+        <div class="rank-card">
+          <i class="fas fa-gem" style="color: #b9f2ff;"></i>
+          <h3>Diamond</h3>
+          <p>31+ reviews. Legendary! You've reached the highest echelon.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer with Social Icons -->
+  <footer>
+    <div class="social-icons">
+      <a href="https://github.com/Anshkabra2012/rate-the-song" title="GitHub"><i class="fab fa-github"></i></a>
+      <a href="https://x.com/anshkabra2012" title="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="https://tiktok.com/@anshthedev" title="tiktok"><i class="fab fa-tiktok"></i></a>
+      <a href="https://discord.gg/uTQWQNmTAy" title="Disord"><i class="fab fa-discord"></i></a>
+    </div>
+    <p>&copy; 2025 Rank Hub. All rights reserved.</p>
+  </footer>
+
+  <!-- JavaScript: Rank Calculator & Confetti Effect -->
+  <script>
+    function calculateRank() {
+      const input = document.getElementById('review-input');
+      const resultDiv = document.getElementById('rank-result');
+      let reviews = parseInt(input.value);
+      
+      if (isNaN(reviews) || reviews < 0) {
+        resultDiv.innerHTML = '<span style="color: #ff5c5c;">Please enter a valid number of reviews.</span>';
+        return;
+      }
+      
+      let rank = "";
+      let iconHTML = "";
+      let description = "";
+      
+      if (reviews < 1) {
+        rank = "Unranked";
+        iconHTML = '<i class="fas fa-user" style="color: #aaa;"></i>';
+        description = "Submit your first review to earn your first rank!";
+      } else if (reviews <= 5) {
+        rank = "Bronze";
+        iconHTML = '<i class="fas fa-award" style="color: #cd7f32;"></i>';
+        description = "Keep going! More reviews will earn you a higher rank.";
+      } else if (reviews <= 10) {
+        rank = "Silver";
+        iconHTML = '<i class="fas fa-medal" style="color: #c0c0c0;"></i>';
+        description = "Nice work! Your reviews are shining.";
+      } else if (reviews <= 20) {
+        rank = "Gold";
+        iconHTML = '<i class="fas fa-crown" style="color: #ffd700;"></i>';
+        description = "Impressive! You're a gold contributor.";
+      } else if (reviews <= 30) {
+        rank = "Platinum";
+        iconHTML = '<i class="fas fa-gem" style="color: #e5e4e2;"></i>';
+        description = "Outstanding! Almost at the top.";
+      } else {
+        rank = "Diamond";
+        iconHTML = '<i class="fas fa-gem" style="color: #b9f2ff;"></i>';
+        description = "Legendary! You're a diamond reviewer.";
+      }
+      
+      resultDiv.innerHTML = `<div>${iconHTML} <strong>${rank}</strong></div><p>${description}</p>`;
+      
+      // Super cool functionality: Trigger confetti when a valid rank is calculated
+      if (reviews > 0) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

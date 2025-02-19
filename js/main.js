@@ -1,3 +1,6 @@
+/***********************
+ * Encryption Utilities
+ ***********************/
 const MASTER_KEY = "11992091987021652611158681308931";
 const REVIEWS_STORAGE_KEY = "x9c3";
 const REVIEWS_KEY_STORAGE_KEY = "x9c3_key";
@@ -69,7 +72,6 @@ function checkRankUpgrade(email) {
   const oldRank = localStorage.getItem("userRank_" + email) || "Unranked";
   const newRank = calculateRank(email);
   if (rankValue(newRank) > rankValue(oldRank)) {
-    // Trigger confetti celebration when rank is upgraded
     confetti({
       particleCount: 100,
       spread: 70,
@@ -88,12 +90,11 @@ function getUserRank(email) {
  * Rate Limiting Utilities
  ***********************/
 const REVIEW_LIMIT = 2;                        // Non-admin users: 2 reviews
-const LIMIT_DURATION = 30 * 60 * 1000;          // 30 minutes in milliseconds
+const LIMIT_DURATION = 30 * 60 * 1000;          // 30 minutes
 
 function canSubmitReview() {
   const now = Date.now();
   let timestamps = JSON.parse(localStorage.getItem("reviewTimestamps") || "[]");
-  // Filter timestamps to those within the last 30 minutes
   timestamps = timestamps.filter(ts => now - ts < LIMIT_DURATION);
   return timestamps.length < REVIEW_LIMIT;
 }
@@ -112,6 +113,11 @@ function addReviewTimestamp() {
 /***********************
  * Other Functionality
  ***********************/
+// Initialize Curse Filter dictionary (ensure the library is loaded)
+if (typeof CurseFilter !== "undefined") {
+  CurseFilter.loadDictionary();
+}
+
 // Particles.js Background
 particlesJS("particles-js", {
   "particles": {
@@ -142,7 +148,6 @@ window.addEventListener("DOMContentLoaded", () => {
   renderShowcase();
   initTypewriter();
 
-  // Attach event listener to the Submit Review button
   const submitButton = document.getElementById("submit-review-btn");
   if (submitButton) {
     submitButton.addEventListener("click", submitReview);
@@ -150,7 +155,7 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("Submit Review button not found! Ensure an element with id 'submit-review-btn' exists.");
   }
 
-  // If admin, show the admin panel
+  // Show admin panel if user is admin
   if (isAdmin()) {
     const adminPanel = document.getElementById("admin-panel");
     if (adminPanel) adminPanel.style.display = "block";
@@ -243,7 +248,7 @@ function highlightStars(rating, stars) {
   });
 }
 
-// iTunes Search using JSONP (for GitHub Pages)
+// iTunes Search using JSONP (for static GitHub Pages)
 function jsonp(url, callbackName) {
   const script = document.createElement("script");
   script.src = url + "&callback=" + callbackName;
@@ -303,7 +308,7 @@ function selectSong(title, art) {
   document.getElementById("review-section").scrollIntoView({ behavior: "smooth" });
 }
 
-// Submit Review with Rate Limiting, Encryption, and Rank Update
+// Submit Review with Rate Limiting, Curse Filter, Encryption, and Rank Update
 function submitReview() {
   console.log("submitReview() called");
   if (!currentUser) {
@@ -326,9 +331,9 @@ function submitReview() {
     return;
   }
 
-  const title = titleInput.value.trim();
-  const art = artInput.value.trim();
-  const reviewText = textInput.value.trim();
+  let title = titleInput.value.trim();
+  let art = artInput.value.trim();
+  let reviewText = textInput.value.trim();
   const rating = selectedRating;
 
   if (!title || !art) {
@@ -342,6 +347,11 @@ function submitReview() {
   if (rating === 0) {
     alert("Please select a star rating (1–5).");
     return;
+  }
+
+  // Filter out vulgar words using Curse Filter (if loaded)
+  if (typeof CurseFilter !== "undefined") {
+    reviewText = CurseFilter.clean(reviewText);
   }
 
   const newReview = {
@@ -359,7 +369,7 @@ function submitReview() {
   reviews.push(newReview);
   saveAllReviews(reviews);
 
-  // For non-admin users, record the review timestamp
+  // For non-admin users, record the review timestamp for rate limiting
   if (!isAdmin()) {
     addReviewTimestamp();
   }
@@ -367,7 +377,7 @@ function submitReview() {
   // Update user rank and trigger celebration if rank increases
   checkRankUpgrade(currentUser.email);
 
-  alert("Review submitted successfully!");
+  alert("Review submitted successfully! Please refresh the page to see the updated reviews.");
   titleInput.value = "";
   artInput.value = "";
   textInput.value = "";

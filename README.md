@@ -83,6 +83,7 @@ Technologies used in the project:
 *   JAVASCRIPT
 *   VSCODE
 *   JS LIBRARIES
+*   FONTAWESOME ICONS
 
 <h2>🛡️ License:</h2>
 

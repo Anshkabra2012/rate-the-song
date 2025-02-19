@@ -378,6 +378,8 @@ function submitReview() {
   checkRankUpgrade(currentUser.email);
 
   alert("Review submitted successfully! Please refresh the page to see the updated reviews.");
+
+  // Clear the form fields and reset the rating.
   titleInput.value = "";
   artInput.value = "";
   textInput.value = "";
@@ -385,6 +387,9 @@ function submitReview() {
   highlightStars(0, document.querySelectorAll("#star-rating i"));
   updateSignInUI();
   renderShowcase();
+
+  // Automatically refresh the page
+  window.location.reload();
 }
 
 // Showcase Rendering

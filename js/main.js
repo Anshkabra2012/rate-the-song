@@ -1,6 +1,3 @@
-/***********************
- * Encryption Utilities
- ***********************/
 const MASTER_KEY = "11992091987021652611158681308931";
 const REVIEWS_STORAGE_KEY = "x9c3";
 const REVIEWS_KEY_STORAGE_KEY = "x9c3_key";
@@ -72,7 +69,7 @@ function checkRankUpgrade(email) {
   const oldRank = localStorage.getItem("userRank_" + email) || "Unranked";
   const newRank = calculateRank(email);
   if (rankValue(newRank) > rankValue(oldRank)) {
-    // Celebration: trigger confetti
+    // Trigger confetti celebration when a user reaches a new rank
     confetti({
       particleCount: 100,
       spread: 70,
@@ -90,18 +87,15 @@ function getUserRank(email) {
 /***********************
  * Rate Limiting Utilities
  ***********************/
-const REVIEW_LIMIT = 5;           // max reviews allowed
-const LIMIT_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+const REVIEW_LIMIT = 5;                        // max reviews allowed per user
+const LIMIT_DURATION = 4 * 60 * 60 * 1000;       // 4 hours in milliseconds
 
 function canSubmitReview() {
   const now = Date.now();
   let timestamps = JSON.parse(localStorage.getItem("reviewTimestamps") || "[]");
   // Filter out timestamps older than 4 hours
   timestamps = timestamps.filter(ts => now - ts < LIMIT_DURATION);
-  if (timestamps.length >= REVIEW_LIMIT) {
-    return false;
-  }
-  return true;
+  return timestamps.length < REVIEW_LIMIT;
 }
 
 function addReviewTimestamp() {
@@ -155,6 +149,12 @@ window.addEventListener("DOMContentLoaded", () => {
   } else {
     console.error("Submit Review button not found! Ensure an element with id 'submit-review-btn' exists.");
   }
+
+  // If admin, show the admin panel (if it exists)
+  if (isAdmin()) {
+    const adminPanel = document.getElementById("admin-panel");
+    if (adminPanel) adminPanel.style.display = "block";
+  }
 });
 
 function handleCredentialResponse(response) {
@@ -173,10 +173,7 @@ function parseJwt(token) {
   const base64Url = token.split(".")[1];
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
   const jsonPayload = decodeURIComponent(
-    atob(base64)
-      .split("")
-      .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-      .join("")
+    atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
   );
   return JSON.parse(jsonPayload);
 }
@@ -191,6 +188,7 @@ function updateSignInUI() {
   const userGreeting = document.getElementById("user-greeting");
   const signoutLink = document.getElementById("signout-link");
   const reviewSection = document.getElementById("review-section");
+
   if (currentUser) {
     const rank = getUserRank(currentUser.email);
     userGreeting.style.display = "block";
@@ -242,12 +240,11 @@ function highlightStars(rating, stars) {
   });
 }
 
-// iTunes Search using JSONP
+// iTunes Search using JSONP (works on static GitHub Pages)
 function jsonp(url, callbackName) {
   const script = document.createElement("script");
   script.src = url + "&callback=" + callbackName;
   document.body.appendChild(script);
-  // Clean up the script tag after it loads
   script.onload = () => document.body.removeChild(script);
 }
 
@@ -257,7 +254,6 @@ function handleItunesResults(data) {
 
 const songSearch = document.getElementById("song-search");
 const resultsContainer = document.getElementById("results");
-
 songSearch.addEventListener("input", function() {
   const query = this.value.trim();
   if (query.length < 2) {
@@ -265,7 +261,6 @@ songSearch.addEventListener("input", function() {
     return;
   }
   const url = `https://itunes.apple.com/search?entity=song&country=us&limit=6&term=${encodeURIComponent(query)}`;
-  // Use JSONP to fetch data from iTunes
   jsonp(url, "handleItunesResults");
 });
 
@@ -313,8 +308,8 @@ function submitReview() {
     return;
   }
 
-  // Rate limit: Only allow 5 reviews per 4 hours per IP/browser
-  if (!canSubmitReview()) {
+  // If the current user is not admin, enforce rate limiting
+  if (!isAdmin() && !canSubmitReview()) {
     alert("You have reached the review limit (5 reviews per 4 hours). Please try again later.");
     return;
   }
@@ -361,8 +356,10 @@ function submitReview() {
   reviews.push(newReview);
   saveAllReviews(reviews);
 
-  // Add timestamp for rate limiting
-  addReviewTimestamp();
+  // For non-admin users, record a timestamp for rate limiting
+  if (!isAdmin()) {
+    addReviewTimestamp();
+  }
 
   // Update user rank and trigger celebration if rank increases
   checkRankUpgrade(currentUser.email);
@@ -438,6 +435,23 @@ function initTypewriter() {
     .start();
 }
 
+// Utility: Check if current user is admin (hardcoded email)
 function isAdmin() {
   return currentUser && currentUser.email === "resoluteplanes@gmail.com";
+}
+
+/***********************
+ * Admin-Only Rank Override
+ ***********************/
+// This function allows the admin to set any user's rank by their email.
+function adminSetUserRank() {
+  const targetEmail = document.getElementById("admin-email-input").value.trim();
+  const selectedRank = document.getElementById("admin-rank-select").value;
+  if (!targetEmail) {
+    alert("Please enter a user email.");
+    return;
+  }
+  localStorage.setItem("userRank_" + targetEmail, selectedRank);
+  alert("Rank for " + targetEmail + " has been set to " + selectedRank + ".");
+  // Optionally, refresh UI if needed.
 }

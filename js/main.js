@@ -377,7 +377,7 @@ function submitReview() {
   // Update user rank and trigger celebration if rank increases
   checkRankUpgrade(currentUser.email);
 
-  alert("Review submitted successfully! Please refresh the page to see the updated reviews.");
+  alert("Review submitted successfully!");
 
   // Clear the form fields and reset the rating.
   titleInput.value = "";
@@ -388,8 +388,10 @@ function submitReview() {
   updateSignInUI();
   renderShowcase();
 
-  // Automatically refresh the page
-  window.location.reload();
+  // Use a short timeout to allow the alert to finish, then reload the page
+  setTimeout(() => {
+    window.location.reload();
+  }, 100);
 }
 
 // Showcase Rendering
